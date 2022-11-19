@@ -1,0 +1,652 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "cf7c9432",
+   "metadata": {},
+   "source": [
+    "# ML Assignment No. 02\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "3b79184c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "import string\n",
+    "from nltk.corpus import stopwords\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn.metrics import accuracy_score\n",
+    "import numpy as np\n",
+    "import pandas as pd"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "e579fd66",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = pd.read_csv('spam_ham_dataset.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "0e865149",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import seaborn as sns\n",
+    "import matplotlib.pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "d788eafe",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Unnamed: 0</th>\n",
+       "      <th>label</th>\n",
+       "      <th>text</th>\n",
+       "      <th>label_num</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>605</td>\n",
+       "      <td>ham</td>\n",
+       "      <td>Subject: enron methanol ; meter # : 988291\\r\\n...</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2349</td>\n",
+       "      <td>ham</td>\n",
+       "      <td>Subject: hpl nom for january 9 , 2001\\r\\n( see...</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3624</td>\n",
+       "      <td>ham</td>\n",
+       "      <td>Subject: neon retreat\\r\\nho ho ho , we ' re ar...</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4685</td>\n",
+       "      <td>spam</td>\n",
+       "      <td>Subject: photoshop , windows , office . cheap ...</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>2030</td>\n",
+       "      <td>ham</td>\n",
+       "      <td>Subject: re : indian springs\\r\\nthis deal is t...</td>\n",
+       "      <td>0</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Unnamed: 0 label                                               text  \\\n",
+       "0         605   ham  Subject: enron methanol ; meter # : 988291\\r\\n...   \n",
+       "1        2349   ham  Subject: hpl nom for january 9 , 2001\\r\\n( see...   \n",
+       "2        3624   ham  Subject: neon retreat\\r\\nho ho ho , we ' re ar...   \n",
+       "3        4685  spam  Subject: photoshop , windows , office . cheap ...   \n",
+       "4        2030   ham  Subject: re : indian springs\\r\\nthis deal is t...   \n",
+       "\n",
+       "   label_num  \n",
+       "0          0  \n",
+       "1          0  \n",
+       "2          0  \n",
+       "3          1  \n",
+       "4          0  "
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "c0cfd6d2",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Total 5171 data email\n"
+     ]
+    }
+   ],
+   "source": [
+    "df = df.drop(['Unnamed: 0'], axis=1)\n",
+    "df.head()\n",
+    "print('Total %s data email'% len(df))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a27ec578",
+   "metadata": {},
+   "source": [
+    "# total class memebers"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "ed1bdbb5",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "ham     3672\n",
+       "spam    1499\n",
+       "Name: label, dtype: int64"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df['label'].value_counts()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6febdd73",
+   "metadata": {},
+   "source": [
+    "# show graph"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "901fe785",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "C:\\Users\\Rushi\\AppData\\Local\\Programs\\Python\\Python310\\lib\\site-packages\\seaborn\\_decorators.py:36: FutureWarning: Pass the following variable as a keyword arg: x. From version 0.12, the only valid positional argument will be `data`, and passing other arguments without an explicit keyword will result in an error or misinterpretation.\n",
+      "  warnings.warn(\n"
+     ]
+    },
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAYsAAAEGCAYAAACUzrmNAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjUuMSwgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy/YYfK9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAUG0lEQVR4nO3de5Cd9X3f8ffHAmwnJkaULZUlETGO0gTsWuAN4KTtYDwGQSeR7RIH4gSVMpXbQht3PG4gMw0Yh4xd26HxjRl5kIHYNSG+xIpLTBRMLs6Ei+TICIEpWy5FqgyKwdiUmhj87R/nt+VUrPRbiT27K/b9mnnmPOf7/J7nfHfmjD56ridVhSRJ+/KSuW5AkjT/GRaSpC7DQpLUZVhIkroMC0lS1yFz3cAoHHXUUbVixYq5bkOSDipbtmz526oam2rZizIsVqxYwebNm+e6DUk6qCR5aG/LPAwlSeoyLCRJXYaFJKnLsJAkdRkWkqQuw0KS1GVYSJK6DAtJUpdhIUnqelHewT0TXv+e6+a6Bc1DWz543ly3IM0J9ywkSV2GhSSpy7CQJHUZFpKkLsNCktQ1srBI8rIktyf5RpLtSd7b6tckeSDJ1jatavUk+UiSiSR3JjlxaFtrk9zXprWj6lmSNLVRXjr7NHBaVT2Z5FDga0n+uC17T1V9bo/xZwIr23QycBVwcpIjgUuBcaCALUk2VtXjI+xdkjRkZHsWNfBke3tom2ofq6wBrmvr3QockWQJcAawqaoeawGxCVg9qr4lSc830nMWSRYl2Qo8yuAf/NvaoivaoaYrk7y01ZYCDw+tvqPV9lbf87PWJdmcZPPu3btn+k+RpAVtpGFRVc9W1SpgGXBSktcAlwA/BfwMcCTw6zP0WeuraryqxsfGpvy9cUnSAZqVq6Gq6jvALcDqqtrVDjU9DXwKOKkN2wksH1ptWavtrS5JmiWjvBpqLMkRbf7lwJuBb7bzECQJ8BbgrrbKRuC8dlXUKcATVbULuAk4PcniJIuB01tNkjRLRnk11BLg2iSLGITSDVX15SRfTTIGBNgK/Os2/kbgLGACeAo4H6CqHkvyPuCONu7yqnpshH1LkvYwsrCoqjuBE6aon7aX8QVcuJdlG4ANM9qgJGnavINbktRlWEiSugwLSVKXYSFJ6jIsJEldhoUkqcuwkCR1GRaSpC7DQpLUZVhIkroMC0lSl2EhSeoyLCRJXYaFJKnLsJAkdRkWkqQuw0KS1GVYSJK6DAtJUtfIwiLJy5LcnuQbSbYneW+rH5vktiQTSX4/yWGt/tL2fqItXzG0rUta/d4kZ4yqZ0nS1Ea5Z/E0cFpVvQ5YBaxOcgrwAeDKqvoJ4HHggjb+AuDxVr+yjSPJccA5wPHAauATSRaNsG9J0h5GFhY18GR7e2ibCjgN+FyrXwu8pc2vae9py9+UJK1+fVU9XVUPABPASaPqW5L0fCM9Z5FkUZKtwKPAJuB/AN+pqmfakB3A0ja/FHgYoC1/Avh7w/Up1pEkzYKRhkVVPVtVq4BlDPYGfmpUn5VkXZLNSTbv3r17VB8jSQvSrFwNVVXfAW4B3gAckeSQtmgZsLPN7wSWA7TlrwS+PVyfYp3hz1hfVeNVNT42NjaKP0OSFqxRXg01luSINv9y4M3APQxC4+w2bC3wpTa/sb2nLf9qVVWrn9OuljoWWAncPqq+JUnPd0h/yAFbAlzbrlx6CXBDVX05yd3A9Ul+C/gb4Oo2/mrg95JMAI8xuAKKqtqe5AbgbuAZ4MKqenaEfUuS9jCysKiqO4ETpqjfzxRXM1XV94Ff3Mu2rgCumOkeJUnT4x3ckqQuw0KS1GVYSJK6DAtJUpdhIUnqMiwkSV2GhSSpy7CQJHUZFpKkLsNCktRlWEiSugwLSVKXYSFJ6jIsJEldhoUkqcuwkCR1GRaSpC7DQpLUZVhIkroMC0lS18jCIsnyJLckuTvJ9iS/1uqXJdmZZGubzhpa55IkE0nuTXLGUH11q00kuXhUPUuSpnbICLf9DPDuqvp6ksOBLUk2tWVXVtWHhgcnOQ44BzgeeBXwp0l+si3+OPBmYAdwR5KNVXX3CHuXJA0ZWVhU1S5gV5v/XpJ7gKX7WGUNcH1VPQ08kGQCOKktm6iq+wGSXN/GGhaSNEtm5ZxFkhXACcBtrXRRkjuTbEiyuNWWAg8Prbaj1fZW3/Mz1iXZnGTz7t27Z/pPkKQFbeRhkeQVwOeBd1XVd4GrgFcDqxjseXx4Jj6nqtZX1XhVjY+Njc3EJiVJzSjPWZDkUAZB8Zmq+gJAVT0ytPyTwJfb253A8qHVl7Ua+6hLkmbBKK+GCnA1cE9V/c5QfcnQsLcCd7X5jcA5SV6a5FhgJXA7cAewMsmxSQ5jcBJ846j6liQ93yj3LH4O+FVgW5KtrfYbwLlJVgEFPAi8E6Cqtie5gcGJ62eAC6vqWYAkFwE3AYuADVW1fYR9S5L2MMqrob4GZIpFN+5jnSuAK6ao37iv9SRJo+Ud3JKkLsNCktRlWEiSugwLSVKXYSFJ6jIsJEldhoUkqcuwkCR1GRaSpC7DQpLUZVhIkroMC0lSl2EhSeoyLCRJXYaFJKlrWmGR5Obp1CRJL077/PGjJC8DfgQ4Kslinvsxox8Dlo64N0nSPNH7pbx3Au8CXgVs4bmw+C7wsdG1JUmaT/YZFlX1u8DvJvl3VfXRWepJkjTPTOucRVV9NMnPJvnlJOdNTvtaJ8nyJLckuTvJ9iS/1upHJtmU5L72urjVk+QjSSaS3JnkxKFtrW3j70uy9oX8wZKk/dc7DAVAkt8DXg1sBZ5t5QKu28dqzwDvrqqvJzkc2JJkE/AvgJur6v1JLgYuBn4dOBNY2aaTgauAk5McCVwKjLfP3JJkY1U9vj9/qCTpwE0rLBj8Q31cVdV0N1xVu4Bdbf57Se5hcFJ8DXBqG3Yt8GcMwmINcF37jFuTHJFkSRu7qaoeA2iBsxr47HR7kSS9MNO9z+Iu4B8c6IckWQGcANwGHN2CBOBbwNFtfinw8NBqO1ptb/U9P2Ndks1JNu/evftAW5UkTWG6exZHAXcnuR14erJYVb/QWzHJK4DPA++qqu8m+X/LqqqSTHtvZV+qaj2wHmB8fHxGtilJGphuWFx2IBtPciiDoPhMVX2hlR9JsqSqdrXDTI+2+k5g+dDqy1ptJ88dtpqs/9mB9CNJOjDTCouq+vP93XAGuxBXA/dU1e8MLdoIrAXe316/NFS/KMn1DE5wP9EC5SbgtyevmgJOBy7Z334kSQduuldDfY/BlUgAhwGHAv+7qn5sH6v9HPCrwLYkW1vtNxiExA1JLgAeAt7elt0InAVMAE8B5wNU1WNJ3gfc0cZdPnmyW5I0O6a7Z3H45HzbY1gDnNJZ52s8d8f3nt40xfgCLtzLtjYAG6bTqyRp5u33U2dr4A+BM2a+HUnSfDTdw1BvG3r7Egb3XXx/JB1Jkuad6V4N9fND888ADzI4FCVJWgCme87i/FE3Ikmav6b740fLknwxyaNt+nySZaNuTpI0P0z3BPenGNwH8ao2/VGrSZIWgOmGxVhVfaqqnmnTNcDYCPuSJM0j0w2Lbyf5lSSL2vQrwLdH2Zgkaf6Yblj8SwZ3Wn+LwWPHz2bwuxSSpAVgupfOXg6snfzBofaDRB9iECKSpBe56e5Z/KPhX6Zrz2Y6YTQtSZLmm+mGxUuGnvo6uWcx3b0SSdJBbrr/4H8Y+Oskf9De/yJwxWhakiTNN9O9g/u6JJuB01rpbVV19+jakiTNJ9M+lNTCwYCQpAVovx9RLklaeAwLSVKXYSFJ6jIsJEldIwuLJBva48zvGqpdlmRnkq1tOmto2SVJJpLcm+SMofrqVptIcvGo+pUk7d0o9yyuAVZPUb+yqla16UaAJMcB5wDHt3U+MfnQQuDjwJnAccC5bawkaRaN7C7sqvqLJCumOXwNcH1VPQ08kGQCOKktm6iq+wGSXN/GegmvJM2iuXhkx0VJzgM2A+9uz5xaCtw6NGZHqwE8vEf95Kk2mmQdsA7gmGOOmemepXnlf17+2rluQfPQMb+5bWTbnu0T3FcBrwZWMXjU+YdnasNVtb6qxqtqfGzM32WSpJk0q3sWVfXI5HySTwJfbm93AsuHhi5rNfZRlyTNklnds0iyZOjtW4HJK6U2AuckeWmSY4GVwO3AHcDKJMcmOYzBSfCNs9mzJGmEexZJPgucChyVZAdwKXBqklVAAQ8C7wSoqu1JbmBw4voZ4MKqerZt5yLgJmARsKGqto+qZ0nS1EZ5NdS5U5Sv3sf4K5jiseft8tobZ7A1SdJ+8g5uSVKXYSFJ6jIsJEldhoUkqcuwkCR1GRaSpC7DQpLUZVhIkroMC0lSl2EhSeoyLCRJXYaFJKnLsJAkdRkWkqQuw0KS1GVYSJK6DAtJUpdhIUnqMiwkSV0jC4skG5I8muSuodqRSTYlua+9Lm71JPlIkokkdyY5cWidtW38fUnWjqpfSdLejXLP4hpg9R61i4Gbq2olcHN7D3AmsLJN64CrYBAuwKXAycBJwKWTASNJmj0jC4uq+gvgsT3Ka4Br2/y1wFuG6tfVwK3AEUmWAGcAm6rqsap6HNjE8wNIkjRis33O4uiq2tXmvwUc3eaXAg8PjdvRanurP0+SdUk2J9m8e/fume1akha4OTvBXVUF1Axub31VjVfV+NjY2ExtVpLE7IfFI+3wEu310VbfCSwfGres1fZWlyTNotkOi43A5BVNa4EvDdXPa1dFnQI80Q5X3QScnmRxO7F9eqtJkmbRIaPacJLPAqcCRyXZweCqpvcDNyS5AHgIeHsbfiNwFjABPAWcD1BVjyV5H3BHG3d5Ve150lySNGIjC4uqOncvi940xdgCLtzLdjYAG2awNUnSfvIObklSl2EhSeoyLCRJXYaFJKnLsJAkdRkWkqQuw0KS1GVYSJK6DAtJUpdhIUnqMiwkSV2GhSSpy7CQJHUZFpKkLsNCktRlWEiSugwLSVKXYSFJ6jIsJEldcxIWSR5Msi3J1iSbW+3IJJuS3NdeF7d6knwkyUSSO5OcOBc9S9JCNpd7Fm+sqlVVNd7eXwzcXFUrgZvbe4AzgZVtWgdcNeudStICN58OQ60Brm3z1wJvGapfVwO3AkckWTIH/UnSgjVXYVHAnyTZkmRdqx1dVbva/LeAo9v8UuDhoXV3tJokaZYcMkef+4+rameSvw9sSvLN4YVVVUlqfzbYQmcdwDHHHDNznUqS5mbPoqp2ttdHgS8CJwGPTB5eaq+PtuE7geVDqy9rtT23ub6qxqtqfGxsbJTtS9KCM+thkeRHkxw+OQ+cDtwFbATWtmFrgS+1+Y3Aee2qqFOAJ4YOV0mSZsFcHIY6GvhiksnP/69V9ZUkdwA3JLkAeAh4ext/I3AWMAE8BZw/+y1L0sI262FRVfcDr5ui/m3gTVPUC7hwFlqTJO3FfLp0VpI0TxkWkqQuw0KS1GVYSJK6DAtJUpdhIUnqMiwkSV2GhSSpy7CQJHUZFpKkLsNCktRlWEiSugwLSVKXYSFJ6jIsJEldhoUkqcuwkCR1GRaSpC7DQpLUZVhIkroOmrBIsjrJvUkmklw81/1I0kJyUIRFkkXAx4EzgeOAc5McN7ddSdLCcVCEBXASMFFV91fV3wHXA2vmuCdJWjAOmesGpmkp8PDQ+x3AycMDkqwD1rW3Tya5d5Z6WwiOAv52rpuYD/KhtXPdgp7P7+ekS/NCt/Dje1twsIRFV1WtB9bPdR8vRkk2V9X4XPchTcXv5+w4WA5D7QSWD71f1mqSpFlwsITFHcDKJMcmOQw4B9g4xz1J0oJxUByGqqpnklwE3AQsAjZU1fY5bmsh8fCe5jO/n7MgVTXXPUiS5rmD5TCUJGkOGRaSpC7DYgFLsiLJXXPdh6T5z7CQJHUZFlqU5JNJtif5kyQvT/KvktyR5BtJPp/kRwCSXJPkqiS3Jrk/yalJNiS5J8k1c/x36EUgyY8m+W/tu3dXkl9K8mCS/5xkW5Lbk/xEG/vzSW5L8jdJ/jTJ0a1+WZJrk/xlkoeSvG1o/a8kOXRu/8qDk2GhlcDHq+p44DvAPwe+UFU/U1WvA+4BLhgavxh4A/AfGNzrciVwPPDaJKtmsW+9OK0G/ldVva6qXgN8pdWfqKrXAh8D/kurfQ04papOYPC8uP84tJ1XA6cBvwB8Grilrf9/gH828r/iRciw0ANVtbXNbwFWAK9p/yvbBryDQRhM+qMaXG+9DXikqrZV1Q+B7W1d6YXYBrw5yQeS/JOqeqLVPzv0+oY2vwy4qX1P38P//z3946r6QdveIp4LnW34PT0ghoWeHpp/lsGNmtcAF7X/ib0XeNkU43+4x7o/5CC5yVPzV1X9d+BEBv+o/1aS35xcNDysvX4U+Fj7nr6TKb6n7T8yP6jnbijze3qADAtN5XBgVzu2+465bkYLR5JXAU9V1aeBDzIIDoBfGnr96zb/Sp57RpyPAx4xE1ZT+U/AbcDu9nr43LajBeS1wAeT/BD4AfBvgM8Bi5PcyWCP4dw29jLgD5I8DnwVOHb22104fNyHpHktyYPAeFX5mxVzyMNQkqQu9ywkSV3uWUiSugwLSVKXYSFJ6jIspBmQ5MnO8v1+wm97FtfZL6wzaWYYFpKkLsNCmkFJXpHk5iRfb085XTO0+JAkn2lP6f3c0NN8X5/kz5NsSXJTkiVz1L60V4aFNLO+D7y1qk4E3gh8OEnasn8IfKKqfhr4LvBv2yNVPgqcXVWvBzYAV8xB39I++bgPaWYF+O0k/5TBQ+uWAke3ZQ9X1V+1+U8D/57B01BfA2xqmbII2DWrHUvTYFhIM+sdwBjw+qr6QXtUxeTTUPe8A7YYhMv2qnoD0jzmYShpZr0SeLQFxRuBHx9adkySyVD4ZQY/3nMvMDZZT3JokuOR5hnDQppZnwHG2w/ynAd8c2jZvcCFSe5h8IuDV1XV3wFnAx9I8g1gK/Czs9uy1OezoSRJXe5ZSJK6DAtJUpdhIUnqMiwkSV2GhSSpy7CQJHUZFpKkrv8LbihzIGxMf5QAAAAASUVORK5CYII=\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "df_label = sns.countplot(df['label'])\n",
+    "df_label.set_xticklabels(df['label'].unique())\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a69ef93b",
+   "metadata": {},
+   "source": [
+    "# data preprocessing\n",
+    "#data text cleaning\n",
+    "# punchuations"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "cb7e91ff",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "punct = []\n",
+    "for char in string.punctuation:\n",
+    "    punct.append(char)\n",
+    " \n",
+    "    import re\n",
+    "    \n",
+    "def cleaning(txt):\n",
+    "    # case folding\n",
+    "    text = txt.lower()\n",
+    "    \n",
+    "    # remove multiple space, tabs, dan newlines\n",
+    "    text = re.sub('\\s+',' ',text)    \n",
+    "    # remove links\n",
+    "    text = text.replace(\"http://\", \" \").replace(\"https://\", \" \")    \n",
+    "    # remove special characters\n",
+    "    text = text.encode('ascii', 'replace').decode('ascii')\n",
+    "    text = ' '.join(re.sub(\"([@#][A-Za-z0-9]+)|(\\w+:\\/\\/\\S+)\",\" \", text).split())    \n",
+    "    # remove punctuation\n",
+    "    text = ''.join([word for word in text if word not in punct])    \n",
+    "    #remove single character\n",
+    "    text = re.sub(r\"\\b[a-zA-Z]\\b\", \"\", text)    \n",
+    "    #remove numbers\n",
+    "    text = re.sub(r\"\\d+\", \"\", text)    \n",
+    "    #remove multiple spaces (again)\n",
+    "    text = re.sub('\\s+',' ',text)    \n",
+    "    return text"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ac549dc9",
+   "metadata": {},
+   "source": [
+    "# call function for cleaning\n",
+    "    # apply fungsi cleaning ke setiap text"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "2495eea8",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>text</th>\n",
+       "      <th>text_cleaned</th>\n",
+       "      <th>label</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Subject: enron methanol ; meter # : 988291\\r\\n...</td>\n",
+       "      <td>subject enron methanol meter this is follow up...</td>\n",
+       "      <td>ham</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>Subject: hpl nom for january 9 , 2001\\r\\n( see...</td>\n",
+       "      <td>subject hpl nom for january see attached file ...</td>\n",
+       "      <td>ham</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>Subject: neon retreat\\r\\nho ho ho , we ' re ar...</td>\n",
+       "      <td>subject neon retreat ho ho ho we re around to ...</td>\n",
+       "      <td>ham</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>Subject: photoshop , windows , office . cheap ...</td>\n",
+       "      <td>subject photoshop windows office cheap main tr...</td>\n",
+       "      <td>spam</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Subject: re : indian springs\\r\\nthis deal is t...</td>\n",
+       "      <td>subject re indian springs this deal is to book...</td>\n",
+       "      <td>ham</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                                text  \\\n",
+       "0  Subject: enron methanol ; meter # : 988291\\r\\n...   \n",
+       "1  Subject: hpl nom for january 9 , 2001\\r\\n( see...   \n",
+       "2  Subject: neon retreat\\r\\nho ho ho , we ' re ar...   \n",
+       "3  Subject: photoshop , windows , office . cheap ...   \n",
+       "4  Subject: re : indian springs\\r\\nthis deal is t...   \n",
+       "\n",
+       "                                        text_cleaned label  \n",
+       "0  subject enron methanol meter this is follow up...   ham  \n",
+       "1  subject hpl nom for january see attached file ...   ham  \n",
+       "2  subject neon retreat ho ho ho we re around to ...   ham  \n",
+       "3  subject photoshop windows office cheap main tr...  spam  \n",
+       "4  subject re indian springs this deal is to book...   ham  "
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df['text_cleaned'] = df['text'].apply(lambda x: cleaning(x))\n",
+    "df = df[['text', 'text_cleaned', 'label']]\n",
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0edc2cb0",
+   "metadata": {},
+   "source": [
+    "# compare"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "687299ce",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Subject: enron methanol ; meter # : 988291\r\n",
+      "this is a follow up to the note i gave you on monday , 4 / 3 / 00 { preliminary\r\n",
+      "flow data provided by daren } .\r\n",
+      "please override pop ' s daily volume { presently zero } to reflect daily\r\n",
+      "activity you can obtain from gas control .\r\n",
+      "this change is needed asap for economics purposes .\n",
+      "subject enron methanol meter this is follow up to the note gave you on monday preliminary flow data provided by daren please override pop daily volume presently zero to reflect daily activity you can obtain from gas control this change is needed asap for economics purposes \n"
+     ]
+    }
+   ],
+   "source": [
+    "print(df['text'][0])\n",
+    "print(df['text_cleaned'][0])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cc41436d",
+   "metadata": {},
+   "source": [
+    "# to remove stop words\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "8659213e",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[nltk_data] Downloading package stopwords to\n",
+      "[nltk_data]     C:\\Users\\Rushi\\AppData\\Roaming\\nltk_data...\n",
+      "[nltk_data]   Unzipping corpora\\stopwords.zip.\n",
+      "[nltk_data] Downloading package punkt to\n",
+      "[nltk_data]     C:\\Users\\Rushi\\AppData\\Roaming\\nltk_data...\n",
+      "[nltk_data]   Unzipping tokenizers\\punkt.zip.\n",
+      "[nltk_data] Downloading package averaged_perceptron_tagger to\n",
+      "[nltk_data]     C:\\Users\\Rushi\\AppData\\Roaming\\nltk_data...\n",
+      "[nltk_data]   Package averaged_perceptron_tagger is already up-to-\n",
+      "[nltk_data]       date!\n",
+      "[nltk_data] Downloading package wordnet to\n",
+      "[nltk_data]     C:\\Users\\Rushi\\AppData\\Roaming\\nltk_data...\n",
+      "[nltk_data]   Package wordnet is already up-to-date!\n"
+     ]
+    }
+   ],
+   "source": [
+    "import nltk\n",
+    "nltk.download('stopwords')\n",
+    "nltk.download('punkt')\n",
+    "nltk.download('averaged_perceptron_tagger')\n",
+    "nltk.download('wordnet')\n",
+    "from nltk.corpus import stopwords\n",
+    "stop = stopwords.words('english')\n",
+    "df['text_cleaned'] = df['text_cleaned'].apply(lambda x: ' '.join([word for word in x.split() if word not in stop]))\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5700a808",
+   "metadata": {},
+   "source": [
+    "# lammitaization"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "99be98be",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "NameError",
+     "evalue": "name 'WordNetLemmatizer' is not defined",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[1;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+      "Input \u001b[1;32mIn [13]\u001b[0m, in \u001b[0;36m<cell line: 1>\u001b[1;34m()\u001b[0m\n\u001b[1;32m----> 1\u001b[0m lemmatizer \u001b[38;5;241m=\u001b[39m \u001b[43mWordNetLemmatizer\u001b[49m()\n\u001b[0;32m      2\u001b[0m \u001b[38;5;28;01mdef\u001b[39;00m \u001b[38;5;21mget_wordnet_pos\u001b[39m(word):\n\u001b[0;32m      3\u001b[0m     \u001b[38;5;124;03m\"\"\"Map POS tag to first character lemmatize() accepts\"\"\"\u001b[39;00m\n",
+      "\u001b[1;31mNameError\u001b[0m: name 'WordNetLemmatizer' is not defined"
+     ]
+    }
+   ],
+   "source": [
+    "lemmatizer = WordNetLemmatizer()\n",
+    "def get_wordnet_pos(word):\n",
+    "    \"\"\"Map POS tag to first character lemmatize() accepts\"\"\"\n",
+    "    tag = nltk.pos_tag([word])[0][1][0].upper()\n",
+    "    tag_dict = {\"J\": wordnet.ADJ,\n",
+    "                \"N\": wordnet.NOUN,\n",
+    "                \"V\": wordnet.VERB,\n",
+    "                \"R\": wordnet.ADV}\n",
+    "    return tag_dict.get(tag, wordnet.NOUN) \n",
+    "\n",
+    "def do_lemma(string):\n",
+    "    lemmatized = ' '.join([lemmatizer.lemmatize(word, get_wordnet_pos(word)) for word in nltk.word_tokenize(string)])\n",
+    "    return lemmatized\n",
+    "\n",
+    "df['text_cleaned'] = df['text_cleaned'].apply(lambda x: do_lemma(x))\n",
+    "\n",
+    "df = df.drop(['text'], axis=1)\n",
+    "df = df.rename(columns = {'text_cleaned' : 'text'})\n",
+    "df.columns\n",
+    "\n",
+    "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+    "tfidf = TfidfVectorizer()\n",
+    "X = tfidf.fit_transform(df['text'])\n",
+    "\n",
+    "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n",
+    "\n",
+    "y = df['label']\n",
+    "\n",
+    "from time import time\n",
+    "from sklearn.neighbors import KNeighborsClassifier\n",
+    "from sklearn.metrics import accuracy_score\n",
+    "# defining the classifier\n",
+    "clf = KNeighborsClassifier(n_neighbors=5, metric='euclidean')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "522e5e7e",
+   "metadata": {},
+   "source": [
+    "# predicting the time of train and testing\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "3d7fae20",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "NameError",
+     "evalue": "name 'time' is not defined",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[1;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+      "Input \u001b[1;32mIn [14]\u001b[0m, in \u001b[0;36m<cell line: 1>\u001b[1;34m()\u001b[0m\n\u001b[1;32m----> 1\u001b[0m t0 \u001b[38;5;241m=\u001b[39m \u001b[43mtime\u001b[49m()\n\u001b[0;32m      2\u001b[0m clf\u001b[38;5;241m.\u001b[39mfit(X_train, y_train)\n\u001b[0;32m      3\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;130;01m\\n\u001b[39;00m\u001b[38;5;124mTraining time:\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;28mround\u001b[39m(time()\u001b[38;5;241m-\u001b[39mt0, \u001b[38;5;241m3\u001b[39m), \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124ms\u001b[39m\u001b[38;5;130;01m\\n\u001b[39;00m\u001b[38;5;124m\"\u001b[39m)\n",
+      "\u001b[1;31mNameError\u001b[0m: name 'time' is not defined"
+     ]
+    }
+   ],
+   "source": [
+    "t0 = time()\n",
+    "clf.fit(X_train, y_train)\n",
+    "print(\"\\nTraining time:\", round(time()-t0, 3), \"s\\n\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "82e29ed8",
+   "metadata": {},
+   "source": [
+    "# predicting the time of  testing"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "216e604e",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "NameError",
+     "evalue": "name 'time' is not defined",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[1;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+      "Input \u001b[1;32mIn [15]\u001b[0m, in \u001b[0;36m<cell line: 1>\u001b[1;34m()\u001b[0m\n\u001b[1;32m----> 1\u001b[0m t1 \u001b[38;5;241m=\u001b[39m \u001b[43mtime\u001b[49m()\n\u001b[0;32m      2\u001b[0m pred \u001b[38;5;241m=\u001b[39m clf\u001b[38;5;241m.\u001b[39mpredict(X_test)\n\u001b[0;32m      3\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mPredicting time:\u001b[39m\u001b[38;5;124m\"\u001b[39m, \u001b[38;5;28mround\u001b[39m(time()\u001b[38;5;241m-\u001b[39mt1, \u001b[38;5;241m3\u001b[39m), \u001b[38;5;124m\"\u001b[39m\u001b[38;5;124ms\u001b[39m\u001b[38;5;130;01m\\n\u001b[39;00m\u001b[38;5;124m\"\u001b[39m)\n",
+      "\u001b[1;31mNameError\u001b[0m: name 'time' is not defined"
+     ]
+    }
+   ],
+   "source": [
+    "t1 = time()\n",
+    "pred = clf.predict(X_test)\n",
+    "print(\"Predicting time:\", round(time()-t1, 3), \"s\\n\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "89ff4bf3",
+   "metadata": {},
+   "source": [
+    "# calculating and printing the accuracy of the algorithm"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "87048f4b",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "NameError",
+     "evalue": "name 'pred' is not defined",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[1;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+      "Input \u001b[1;32mIn [16]\u001b[0m, in \u001b[0;36m<cell line: 1>\u001b[1;34m()\u001b[0m\n\u001b[1;32m----> 1\u001b[0m \u001b[38;5;28mprint\u001b[39m(\u001b[38;5;124m\"\u001b[39m\u001b[38;5;124mAccuracy of KNN Algorithm: \u001b[39m\u001b[38;5;124m\"\u001b[39m, accuracy_score(\u001b[43mpred\u001b[49m,y_test))\n",
+      "\u001b[1;31mNameError\u001b[0m: name 'pred' is not defined"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"Accuracy of KNN Algorithm: \", accuracy_score(pred,y_test))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "9f76cb4b",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
